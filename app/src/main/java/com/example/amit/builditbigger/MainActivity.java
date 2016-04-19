@@ -1,15 +1,20 @@
 package com.example.amit.builditbigger;
 
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.util.Pair;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Toast;
 
 import com.example.Jokes;
+import com.example.myjokeandroidlibrary.MainJokeActivity;
 
-public class MainActivity extends AppCompatActivity {
+;
+
+public class MainActivity extends AppCompatActivity implements AsyncResponse{
 
 
     Jokes jokes;
@@ -44,7 +49,23 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void tellJoke(View view){
-        Toast.makeText(this, jokes.tellJokes(), Toast.LENGTH_SHORT).show();
+//        Toast.makeText(this, jokes.tellJokes(), Toast.LENGTH_SHORT).show();
+//        Intent jokeintent = new Intent(this, MainJokeActivity.class);
+//        jokeintent.putExtra("JOKE",jokes.tellJokes());
+//        startActivity(jokeintent);
+        EndpointsAsyncTask endpointsAsyncTask = new EndpointsAsyncTask();
+        endpointsAsyncTask.delegate = this;
+        endpointsAsyncTask.execute(new Pair<Context, String>(this, "Manfred"));
     }
+
+    @Override
+    public void processFinish(String output){
+        //Here you will receive the result fired from async class
+        //of onPostExecute(result) method.
+        Intent jokeintent = new Intent(this, MainJokeActivity.class);
+        jokeintent.putExtra("JOKE",output);
+        startActivity(jokeintent);
+    }
+
 
 }
