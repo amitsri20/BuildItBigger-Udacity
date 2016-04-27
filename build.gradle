@@ -21,3 +21,15 @@ allprojects {
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
+
+// Task to run appengine perform tests and stop appengine server!
+task runAppEngineAndTest(dependsOn: [":GCEbackend:appengineRun", ":app:connectedCheck", ":GCEbackend:appengineStop"]) {
+    project(":GCEbackend").afterEvaluate { GCEbackend ->
+        GCEbackend.extensions.appengine.daemon = true
+    }
+
+
+    tasks.getByPath(':app:connectedCheck').mustRunAfter ':GCEbackend:appengineRun'
+    tasks.getByPath(':GCEbackend:appengineStop').mustRunAfter ':app:connectedCheck'
+
+}
