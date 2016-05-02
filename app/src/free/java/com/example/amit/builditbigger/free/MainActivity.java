@@ -14,6 +14,9 @@ import com.example.amit.builditbigger.AsyncResponse;
 import com.example.amit.builditbigger.EndpointsAsyncTask;
 import com.example.amit.builditbigger.R;
 import com.example.myjokeandroidlibrary.MainJokeActivity;
+import com.google.android.gms.ads.AdListener;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.InterstitialAd;
 
 ;
 
@@ -21,11 +24,31 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
 
 
     Jokes jokes;
+    String mJoke;
+    private InterstitialAd mInterstitialAd;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         jokes = new Jokes();
+
+        //Initialting interestial ad
+        mInterstitialAd = new InterstitialAd(this);
+        mInterstitialAd.setAdUnitId(getString(R.string.interstitial_ad_unit_id));
+        mInterstitialAd.setAdListener(new AdListener() {
+            @Override
+            public void onAdClosed() {
+                loadAd();
+                startJokeActivity(mJoke);
+            }
+        });
+        loadAd();
+    }
+
+    private void startJokeActivity(String joke) {
+        Intent jokeintent = new Intent(this, MainJokeActivity.class);
+        jokeintent.putExtra("JOKE",joke);
+        startActivity(jokeintent);
     }
 
 
@@ -52,10 +75,10 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
     }
 
     public void tellJoke(View view){
-//        Toast.makeText(this, jokes.tellJokes(), Toast.LENGTH_SHORT).show();
-//        Intent jokeintent = new Intent(this, MainJokeActivity.class);
-//        jokeintent.putExtra("JOKE",jokes.tellJokes());
-//        startActivity(jokeintent);
+
+        if (!mInterstitialAd.isLoaded() && mInterstitialAd.isLoading())
+            loadAd();
+
         EndpointsAsyncTask endpointsAsyncTask = new EndpointsAsyncTask();
         endpointsAsyncTask.delegate = this;
         endpointsAsyncTask.execute(new Pair<Context, String>(this, "-Free version"));
@@ -67,8 +90,19 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
         //of onPostExecute(result) method.
         Intent jokeintent = new Intent(this, MainJokeActivity.class);
         jokeintent.putExtra("JOKE",output);
-        startActivity(jokeintent);
+        mJoke = output;
+        if (mInterstitialAd.isLoaded())
+            mInterstitialAd.show();
+        else
+            startJokeActivity(mJoke);
+//        startActivity(jokeintent);
     }
 
+    private void loadAd() {
+        final AdRequest adRequest = new AdRequest.Builder()
+                .addTestDevice(AdRequest.DEVICE_ID_EMULATOR)
+                .build();
+        mInterstitialAd.loadAd(adRequest);
+    }
 
 }
