@@ -8,6 +8,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import com.example.Jokes;
 import com.example.amit.builditbigger.AsyncResponse;
@@ -25,13 +27,15 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
 
     Jokes jokes;
     String mJoke;
+    ProgressBar progressBar;
     private InterstitialAd mInterstitialAd;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         jokes = new Jokes();
-
+        progressBar = (ProgressBar)findViewById(R.id.progressBar2);
+        progressBar.setVisibility(View.GONE);
         //Initialting interestial ad
         mInterstitialAd = new InterstitialAd(this);
         mInterstitialAd.setAdUnitId(getString(R.string.interstitial_ad_unit_id));
@@ -78,7 +82,8 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
 
         if (!mInterstitialAd.isLoaded() && mInterstitialAd.isLoading())
             loadAd();
-
+        progressBar.setVisibility(View.VISIBLE);
+        Toast.makeText(this, R.string.please_wait_text, Toast.LENGTH_SHORT).show();
         EndpointsAsyncTask endpointsAsyncTask = new EndpointsAsyncTask();
         endpointsAsyncTask.delegate = this;
         endpointsAsyncTask.execute(new Pair<Context, String>(this, "-Free version"));
@@ -88,6 +93,7 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
     public void processFinish(String output){
         //Here you will receive the result fired from async class
         //of onPostExecute(result) method.
+        progressBar.setVisibility(View.GONE);
         Intent jokeintent = new Intent(this, MainJokeActivity.class);
         jokeintent.putExtra("JOKE",output);
         mJoke = output;
